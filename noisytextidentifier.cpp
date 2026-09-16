@@ -199,3 +199,100 @@ bool extractIPv4(const std::string& str,
     outPort = -1;
     return false;
 }
+
+int main()
+{
+    char choice = 'Y';
+
+    // Continue running until the user chooses N or n.
+    while (choice == 'Y' || choice == 'y')
+    {
+        std::string fileName;
+
+        std::cout << "Enter the name of the text file: ";
+        std::getline(std::cin, fileName);
+
+        // Attempt to open the file.
+        std::ifstream inputFile(fileName);
+
+        if (!inputFile.is_open())
+        {
+            std::cout << "\nError: Could not open file \""
+                      << fileName << "\".\n";
+            std::cout << "Make sure the file is in the program's "
+                      << "working directory.\n";
+        }
+        else
+        {
+            // Read the entire file into one string.
+            std::stringstream buffer;
+            buffer << inputFile.rdbuf();
+
+            std::string text = buffer.str();
+
+            inputFile.close();
+
+            unsigned long address = 0;
+            int port = -1;
+
+            std::cout << "\nSearching file...\n\n";
+
+            if (extractIPv4(text, address, port))
+            {
+                std::cout << "Valid IPv4 address found: ";
+
+                printIPv4(address);
+
+                std::cout << "\n";
+
+                std::cout << "32-bit address value: "
+                          << address << "\n";
+
+                if (port != -1)
+                {
+                    std::cout << "Port: "
+                              << port << "\n";
+                }
+                else
+                {
+                    std::cout << "Port: None\n";
+                }
+            }
+            else
+            {
+                std::cout << "No valid IPv4 address was found.\n";
+            }
+        }
+
+        // Ask whether another file should be checked.
+        while (true)
+        {
+            std::cout << "\nWould you like to check another file? "
+                      << "(Y/N): ";
+
+            std::string answer;
+            std::getline(std::cin, answer);
+
+            if (answer.length() == 1 &&
+                (answer[0] == 'Y' || answer[0] == 'y'))
+            {
+                choice = answer[0];
+                std::cout << "\n";
+                break;
+            }
+
+            if (answer.length() == 1 &&
+                (answer[0] == 'N' || answer[0] == 'n'))
+            {
+                choice = answer[0];
+                break;
+            }
+
+            std::cout << "Invalid input. Please enter Y or N.\n";
+        }
+    }
+
+    std::cout << "\nProgram closed.\n";
+
+    return 0;
+}
