@@ -1,6 +1,4 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
 
 // Returns true if c is allowed to be part of an IPv4 candidate token.
@@ -203,115 +201,59 @@ bool extractIPv4(const std::string& str,
     return false;
 }
 
-// Converts the 32-bit address back into dotted-decimal form
-// so that it can easily be displayed to the user.
-void printIPv4(unsigned long address)
-{
-    unsigned long octet1 = (address >> 24) & 255;
-    unsigned long octet2 = (address >> 16) & 255;
-    unsigned long octet3 = (address >> 8) & 255;
-    unsigned long octet4 = address & 255;
-
-    std::cout << octet1 << "."
-              << octet2 << "."
-              << octet3 << "."
-              << octet4;
-}
-
-
 int main()
 {
-    char choice = 'Y';
+    std::string input;
 
-    // Continue running until the user chooses N or n.
-    while (choice == 'Y' || choice == 'y')
+    while (true)
     {
-        std::string fileName;
+        std::cout << "Enter a string (or 'END' to quit): ";
+        std::getline(std::cin, input);
 
-        std::cout << "Enter the name of the text file: ";
-        std::getline(std::cin, fileName);
-
-        // Attempt to open the file.
-        std::ifstream inputFile(fileName);
-
-        if (!inputFile.is_open())
+        // END is case-sensitive.
+        if (input == "END")
         {
-            std::cout << "\nError: Could not open file \""
-                      << fileName << "\".\n";
-            std::cout << "Make sure the file is in the program's "
-                      << "working directory.\n";
+            std::cout << "Program terminated." << std::endl;
+            break;
         }
-        else
+
+        unsigned long address = 0;
+        int port = -1;
+
+        if (extractIPv4(input, address, port))
         {
-            // Read the entire file into one string.
-            std::stringstream buffer;
-            buffer << inputFile.rdbuf();
+            // Extract the four octets from the packed address.
+            unsigned long a = (address >> 24) & 255;
+            unsigned long b = (address >> 16) & 255;
+            unsigned long c = (address >> 8) & 255;
+            unsigned long d = address & 255;
 
-            std::string text = buffer.str();
+            std::cout << "Extracted IPv4 address: "
+                      << a << "."
+                      << b << "."
+                      << c << "."
+                      << d
+                      << " (decimal value: "
+                      << address
+                      << ", port: ";
 
-            inputFile.close();
-
-            unsigned long address = 0;
-            int port = -1;
-
-            std::cout << "\nSearching file...\n\n";
-
-            if (extractIPv4(text, address, port))
+            if (port == -1)
             {
-                std::cout << "Valid IPv4 address found: ";
-
-                printIPv4(address);
-
-                std::cout << "\n";
-
-                std::cout << "32-bit address value: "
-                          << address << "\n";
-
-                if (port != -1)
-                {
-                    std::cout << "Port: "
-                              << port << "\n";
-                }
-                else
-                {
-                    std::cout << "Port: None\n";
-                }
+                std::cout << "none";
             }
             else
             {
-                std::cout << "No valid IPv4 address was found.\n";
+                std::cout << port;
             }
+
+            std::cout << ")" << std::endl;
         }
-
-        // Ask whether another file should be checked.
-        while (true)
+        else
         {
-            std::cout << "\nWould you like to check another file? "
-                      << "(Y/N): ";
-
-            std::string answer;
-            std::getline(std::cin, answer);
-
-            if (answer.length() == 1 &&
-                (answer[0] == 'Y' || answer[0] == 'y'))
-            {
-                choice = answer[0];
-                std::cout << "\n";
-                break;
-            }
-
-            if (answer.length() == 1 &&
-                (answer[0] == 'N' || answer[0] == 'n'))
-            {
-                choice = answer[0];
-                break;
-            }
-
-            std::cout << "Invalid input. Please enter Y or N.\n";
+            std::cout << "Invalid input: no valid IPv4 address found"
+                      << std::endl;
         }
     }
-
-    std::cout << "\nProgram closed.\n";
 
     return 0;
 }
